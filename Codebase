@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Catcher</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .target-color {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            border: 2px solid #000;
+        }
+
+        .game-area {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            border: 2px solid #000;
+            overflow: hidden;
+            background-color: #fff;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            transition: opacity 0.5s;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 1.5em;
+            color: magenta;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Colour Catcher</h1>
+        <div id="targetColor" class="target-color"></div>
+        <div id="score">Score: 0</div>
+        <div id="highScore">High Score: 0</div>
+        <div id="timer">Time: 10</div>
+        <button id="startButton">Start Game</button>
+        <div id="gameArea" class="game-area"></div>
+        <div id="message" class="message"></div>
+    </div>
+    <script>
+        let score = 0;
+        let highScore = 0;
+        let timeLeft = 10;
+        let gameInterval;
+        let shapeInterval;
+        let wrongClicks = 0;
+        const maxWrongClicks = 3;
+
+        const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+        const shapes = ['circle', 'square'];
+
+        const targetColorDiv = document.getElementById('targetColor');
+        const scoreDiv = document.getElementById('score');
+        const highScoreDiv = document.getElementById('highScore');
+        const timerDiv = document.getElementById('timer');
+        const gameArea = document.getElementById('gameArea');
+        const messageDiv = document.getElementById('message');
+        const startButton = document.getElementById('startButton');
+
+        startButton.addEventListener('click', startGame);
+
+        function startGame() {
+            score = 0;
+            wrongClicks = 0;
+            timeLeft = 10;
+            updateScore();
+            updateHighScore();
+            messageDiv.textContent = '';
+            startButton.disabled = true;
+            generateTargetColor();
+            gameInterval = setInterval(updateTimer, 1000);
+            shapeInterval = setInterval(generateShape, 1000);
+        }
+
+        function generateTargetColor() {
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            targetColorDiv.style.backgroundColor = randomColor;
+        }
+
+        function generateShape() {
+            const shapeDiv = document.createElement('div');
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
+            
+            shapeDiv.classList.add('shape');
+            shapeDiv.style.backgroundColor = randomColor;
+            shapeDiv.style.width = '50px';
+            shapeDiv.style.height = '50px';
+            shapeDiv.style.top = Math.random() * (gameArea.clientHeight - 50) + 'px';
+            shapeDiv.style.left = Math.random() * (gameArea.clientWidth - 50) + 'px';
+            
+            if (randomShape === 'square') {
+                shapeDiv.style.borderRadius = '0';
+            }
+            
+            shapeDiv.addEventListener('click', () => handleShapeClick(randomColor));
+            gameArea.appendChild(shapeDiv);
+            
+            setTimeout(() => {
+                shapeDiv.remove();
+            }, 2000);
+        }
+
+        function handleShapeClick(color) {
+            if (color === targetColorDiv.style.backgroundColor) {
+                score += 10;
+                updateScore();
+                messageDiv.textContent = 'Correct!';
+            } else {
+                wrongClicks++;
+                if (wrongClicks >= maxWrongClicks) {
+                    endGame();
+                }
+            }
+        }
+
+        function updateScore() {
+            scoreDiv.textContent = 'Score: ' + score;
+            if (score > highScore) {
+                highScore = score;
+                updateHighScore();
+            }
+        }
+
+        function updateHighScore() {
+            highScoreDiv.textContent = 'High Score: ' + highScore;
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            timerDiv.textContent = 'Time: ' + timeLeft;
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            clearInterval(gameInterval);
+            clearInterval(shapeInterval);
+            startButton.disabled = false;
+            messageDiv.textContent = 'Game Over! Your score: ' + score;
+            gameArea.innerHTML = ''; // Clear shapes
+        }
+    </script>
+</body>
+</html>
